@@ -85,6 +85,10 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
+        self.set_subtask_mask = None
+
+    def set_subtask_weights(self, subtask_mask):
+        self.subtask_mask = subtask_mask
 
     def set_env_layout(self, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
@@ -196,7 +200,10 @@ class OvercookedGymEnv(Env):
         joint_action = [None, None]
         joint_action[self.p_idx] = action
         tm_obs = self.get_obs(p_idx=self.t_idx, enc_fn=self.teammate.encoding_fn)
-        joint_action[self.t_idx] = self.teammate.predict(tm_obs, deterministic=False)[0]
+        if self.subtask_mask is not None:
+            joint_action[self.t_idx] = self.teammate.predict(tm_obs, deterministic=False, mask=self.subtask_mask)[0]
+        else:
+            joint_action[self.t_idx] = self.teammate.predict(tm_obs, deterministic=False)[0]
         joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
         self.joint_action = joint_action
 

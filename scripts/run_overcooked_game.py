@@ -71,9 +71,16 @@ class App:
             # worker = MultiAgentSubtaskWorker.load(Path('agent_models_NIPS/HAHA/worker'), args)
             # self.env = OvercookedManagerGymEnv(worker, layout_name=self.layout_name, args=args, ret_completed_subtasks=True, is_eval_env=True)
             self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=True, is_eval_env=True, horizon=400)
+            subtask_weights = np.zeros(Subtasks.NUM_SUBTASKS)
+            subtask_weights[Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']] = 1
+            subtask_weights[Subtasks.SUBTASKS_TO_IDS['put_onion_in_pot']] = 1
+            subtask_weights[Subtasks.SUBTASKS_TO_IDS['unknown']] = 1
+            self.env.set_subtask_weights(subtask_weights)
+
         self.env.set_teammate(teammate)
         self.env.reset(p_idx=p_idx)
         self.env.teammate.set_idx(self.env.t_idx, self.layout_name, False, True, False)
+
 
         self.grid_shape = self.env.grid_shape
         self.agent = agent

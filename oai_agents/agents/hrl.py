@@ -304,27 +304,24 @@ class HierarchicalRL(OAIAgent):
         else:
             return np.sum(obs['visual_obs'][urgent_idx]) > 0
 
-    def get_manually_tuned_action(self, obs, deterministic=False):
+    def get_manually_tuned_action(self, obs, mask=None, deterministic=False):
         dist = self.manager.get_distribution(obs)
         probs = dist.distribution.probs
         probs = probs[0]
 
-        subtask_weights = np.zeros_like(probs.cpu())
-        subtask_weights[Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']] = 1
-        subtask_weights[Subtasks.SUBTASKS_TO_IDS['put_onion_in_pot']] = 1
-        subtask_weights[Subtasks.SUBTASKS_TO_IDS['unknown']] = 1
+        if mask is not None:
 
-        new_probs = np.multiply(probs.cpu(), subtask_weights)
-        new_probs = new_probs.numpy()
-        new_probs /= np.sum(new_probs)
-        
-        # while not np.isclose(np.sum(new_probs), 1, rtol=1e-3, atol=1e-3):
-        #     new_probs /= np.sum(new_probs)
-            # print('--------------\n', new_probs, '\n--->\n', probs)
-        subtask = np.argmax(new_probs, axis=-1) if deterministic else Categorical(probs=th.tensor(new_probs)).sample()
-        return np.expand_dims(np.array(subtask), 0)
+            new_probs = np.multiply(probs.cpu(), mask)
+            new_probs = new_probs.numpy()
+            new_probs /= np.sum(new_probs)
+            
+            # while not np.isclose(np.sum(new_probs), 1, rtol=1e-3, atol=1e-3):
+            #     new_probs /= np.sum(new_probs)
+                # print('--------------\n', new_probs, '\n--->\n', probs)
+            subtask = np.argmax(new_probs, axis=-1) if deterministic else Categorical(probs=th.tensor(new_probs)).sample()
+            return np.expand_dims(np.array(subtask), 0)
 
-    def predict(self, obs, state=None, episode_start=None, deterministic: bool=False):
+    def predict(self, obs, state=None, episode_start=None, deterministic: bool=False, mask=None):
         # TODO consider forcing new subtask if none has been completed in x timesteps
         # print(obs['player_completed_subtasks'],  self.prev_player_comp_st, (obs['player_completed_subtasks'] != self.prev_player_comp_st).any(), flush=True)
         if np.sum(obs['player_completed_subtasks']) == 1 or np.sum(obs['teammate_completed_subtasks']) == 1 or \
@@ -333,7 +330,7 @@ class HierarchicalRL(OAIAgent):
                 self.subtask_step += 1
             # Completed previous subtask, set new subtask
             if self.tune_subtasks:
-                self.curr_subtask_id = self.get_manually_tuned_action(obs, deterministic=deterministic)
+                self.curr_subtask_id = self.get_manually_tuned_action(obs, deterministic=deterministic, mask=mask)
             else:
                 self.curr_subtask_id = self.manager.predict(obs, state=state, episode_start=episode_start,
                                                             deterministic=deterministic)[0]
