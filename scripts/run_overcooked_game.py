@@ -301,7 +301,7 @@ if __name__ == "__main__":
 
     t_idx = 1 - args.p_idx
     tm = load_agent(Path(args.teammate), args)
-    tm.set_idx(t_idx, args.layout, is_hrl=isinstance(tm, HierarchicalRL), tune_subtasks=False)
+    tm.set_idx(t_idx, args.layout, is_hrl=isinstance(tm, HierarchicalRL), tune_subtasks=True)
     if args.agent == 'human':
         agent = args.agent
     else:

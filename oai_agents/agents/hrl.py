@@ -308,127 +308,18 @@ class HierarchicalRL(OAIAgent):
         dist = self.manager.get_distribution(obs)
         probs = dist.distribution.probs
         probs = probs[0]
-        assert np.isclose(np.sum(probs.numpy()), 1)
-        if self.layout_name == None:
-            raise ValueError("Set current layout using set_curr_layout before attempting manual adjustment")
-        elif self.layout_name == 'counter_circuit_o_1order':
-            # if self.p_idx == 0:
-                # Up weight supporting tasks
-            subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['unknown']]
-            subtask_weighting = [0.1]
-            new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-            if self.non_full_pot_exists(obs) and not self.is_urgent(obs):
-                    subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_onion_from_counter'],
-                                         Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']]
-                    subtask_weighting = [200, 0.1]
-                    new_probs = self.adjust_distributions(new_probs, subtasks_to_weigh, subtask_weighting)
-                    # subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']]#, Subtasks.SUBTASKS_TO_IDS['unknown']]
-                    # subtask_weighting = [1e-4 for _ in subtasks_to_weigh]
-                    # new_probs = self.adjust_distributions(new_probs, subtasks_to_weigh, subtask_weighting)
-            # else:
-            #     new_probs = np.copy(probs.cpu()) if type(probs) == th.Tensor else np.copy(probs)
-            # else:
-            #     new_probs = probs
 
+        subtask_weights = np.zeros_like(probs.cpu())
+        subtask_weights[Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']] = 1
+        subtask_weights[Subtasks.SUBTASKS_TO_IDS['put_onion_in_pot']] = 1
+        subtask_weights[Subtasks.SUBTASKS_TO_IDS['unknown']] = 1
 
-                # subtasks_to_weigh = ['put_onion_closer']
-                # subtask_weighting = [25 for _ in subtasks_to_weigh]
-                # new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                # Down weight complementary tasks
-            #     subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS[s] for s in Subtasks.COMP_STS]
-            #     subtask_weighting = [0.04 for _ in subtasks_to_weigh]
-            #     new_probs = self.adjust_distributions(new_probs, subtasks_to_weigh, subtask_weighting)
-            #     print(new_probs)
-            # else:
-            #     # Down weight supporting tasks
-            #     subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS[s] for s in Subtasks.SUPP_STS]
-            #     subtask_weighting = [0.01 for _ in subtasks_to_weigh]
-            #     new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-            #
-            #     # Up weight complementary tasks
-            #     subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS[s] for s in Subtasks.COMP_STS]
-            #     subtask_weighting = [100 for _ in subtasks_to_weigh]
-            #     new_probs = self.adjust_distributions(new_probs, subtasks_to_weigh, subtask_weighting)
-        elif self.layout_name == 'forced_coordination':
-            # NOTE: THIS ASSUMES BEING P2
-            # Since tasks are very limited, we use a different change instead of support and coordinated.
-            if self.p_idx == 1:
-            #     if (self.subtask_step + 2) % 8 == 0:
-            #         subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']
-            #     elif (self.subtask_step + 1) % 8 == 0:
-            #         subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['put_plate_closer']
-            #     else:
-            #         if self.subtask_step % 2 == 0:
-            #             subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']
-            #         else:
-            #             subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['put_onion_closer']
-
-
-
-                if (self.subtask_step + 2) % 16 == 0 or (self.subtask_step + 4) % 16 == 0:
-                    subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']
-                elif (self.subtask_step + 1) % 16 == 0 or (self.subtask_step + 3) % 16 == 0:
-                    subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['put_plate_closer']
-                else:
-                    if self.subtask_step % 2 == 0:
-                        subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']
-                    else:
-                        subtasks_to_weigh = Subtasks.SUBTASKS_TO_IDS['put_onion_closer']
-                subtasks_to_weigh = [subtasks_to_weigh]
-                subtask_weighting = [1e8 for _ in subtasks_to_weigh]
-                new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                # print(self.subtask_step, [Subtasks.IDS_TO_SUBTASKS[s] for s in subtasks_to_weigh])
-            else:
-                new_probs = np.copy(probs.cpu()) if type(probs) == th.Tensor else np.copy(probs)
-            # self.subtask_step += 1
-        elif self.layout_name == 'asymmetric_advantages':
-            #
-            if self.p_idx == 0:
-                if self.non_full_pot_exists(obs):
-                    subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']]
-                    subtask_weighting = [1e12 for _ in subtasks_to_weigh]
-                    new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                # elif self.other_player_has_plate(obs):
-                #     print('plate')
-                #     subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['unknown'], Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack'], Subtasks.SUBTASKS_TO_IDS['put_onion_closer']]
-                #     subtask_weighting = [1e12, 1e-12, 1e-12]
-                #     new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                #     print(new_probs[Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']])
-                elif (not self.a_soup_is_almost_done(obs, time_left_thresh=2) or self.other_player_has_plate(obs))\
-                        and self.waiting_steps < 5:
-                    subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['unknown'],
-                                         Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']]
-                    subtask_weighting = [1e12 for _ in subtasks_to_weigh]
-                    new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                    self.waiting_steps += 1
-                else:
-                    new_probs = np.copy(probs.cpu()) if type(probs) == th.Tensor else np.copy(probs)
-                    self.waiting_steps = 0
-
-            elif self.p_idx == 1:
-                if self.non_full_pot_exists(obs) and not self.a_soup_is_almost_done(obs, time_left_thresh=14) and not self.is_urgent(obs):
-                    subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser'], Subtasks.SUBTASKS_TO_IDS['put_onion_in_pot']]
-                    subtask_weighting = [1e8 for _ in subtasks_to_weigh]
-                    new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                    self.waiting_steps = 0
-                elif self.other_player_has_plate(obs) and self.waiting_steps < 5:
-                    subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']]
-                    subtask_weighting = [1e-12 for _ in subtasks_to_weigh]
-                    new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-                    self.waiting_steps += 1
-                else:
-                    new_probs = np.copy(probs.cpu()) if type(probs) == th.Tensor else np.copy(probs)
-                    self.waiting_steps = 0
-            # if self.p_idx == 1:
-            #     # NOTE: THIS ASSUMES BEING P2
-            #     # Up weight all plate related tasks
-            #     subtasks_to_weigh = [Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']]
-            #     subtask_weighting = [1000 for _ in subtasks_to_weigh]
-            #     new_probs = self.adjust_distributions(probs, subtasks_to_weigh, subtask_weighting)
-        else:
-            new_probs = np.copy(probs.cpu()) if type(probs) == th.Tensor else np.copy(probs)
-        while not np.isclose(np.sum(new_probs), 1, rtol=1e-3, atol=1e-3):
-            new_probs /= np.sum(new_probs)
+        new_probs = np.multiply(probs.cpu(), subtask_weights)
+        new_probs = new_probs.numpy()
+        new_probs /= np.sum(new_probs)
+        
+        # while not np.isclose(np.sum(new_probs), 1, rtol=1e-3, atol=1e-3):
+        #     new_probs /= np.sum(new_probs)
             # print('--------------\n', new_probs, '\n--->\n', probs)
         subtask = np.argmax(new_probs, axis=-1) if deterministic else Categorical(probs=th.tensor(new_probs)).sample()
         return np.expand_dims(np.array(subtask), 0)
