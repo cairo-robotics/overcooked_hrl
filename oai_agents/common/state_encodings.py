@@ -63,7 +63,7 @@ def OAI_egocentric_encode_state(mdp: OvercookedGridworld, state: OvercookedState
         raise ValueError(f'Ego grid shape must be 2D and both dimensions must be odd! {grid_shape} is invalid.')
 
     # Get np.array representing current state
-    visual_obs = mdp.lossless_state_encoding(state, horizon=horizon, goal_objects=goal_objects)  # This returns 2xNxMxF (F is # features)
+    visual_obs = mdp.lossless_state_encoding(state, horizon=horizon)  # This returns 2xNxMxF (F is # features)
     visual_obs = np.stack(visual_obs, axis=0)
     visual_obs = np.transpose(visual_obs, (0, 3, 1, 2))  # Reorder to features first --> 2xFxNxM
     num_players, num_features = visual_obs.shape[0], visual_obs.shape[1]

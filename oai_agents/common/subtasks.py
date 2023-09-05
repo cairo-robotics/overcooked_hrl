@@ -2,10 +2,13 @@ import numpy as np
 
 class Subtasks:
     SUBTASKS = ['get_onion_from_dispenser', 'get_onion_from_counter', 'put_onion_in_pot', 'put_onion_closer',
+                'get_tomato_from_dispenser', 'get_tomato_from_counter', 'put_tomato_in_pot', 'put_tomato_closer',
                 'get_plate_from_dish_rack', 'get_plate_from_counter', 'put_plate_closer', 'get_soup',
                 'get_soup_from_counter', 'put_soup_closer', 'serve_soup', 'unknown']
     HUMAN_READABLE_ST = ['Grabbing an onion from dispenser', 'Grabbing an onion from counter',
                          'Putting onion in pot', 'Placing onion closer to pot',
+                         'Grabbing a tomato from dispenser', 'Grabbing a tomato from counter',
+                         'Putting tomato in pot', 'Placing tomato closer to pot',
                          'Grabbing dish from dispenser', 'Grabbing dish from counter',
                          'Placing dish closer to pot', 'Getting the soup',
                          'Grabbing soup from counter', 'Placing soup closer',
@@ -15,13 +18,15 @@ class Subtasks:
     IDS_TO_SUBTASKS = {v: k for k, v in SUBTASKS_TO_IDS.items()}
     HR_SUBTASKS_TO_IDS = {s: i for i, s in enumerate(HUMAN_READABLE_ST)}
     IDS_TO_HR_SUBTASKS = {v: k for k, v in HR_SUBTASKS_TO_IDS.items()}
-    BASE_STS = ['get_onion_from_dispenser', 'put_onion_in_pot', 'get_plate_from_dish_rack', 'get_soup', 'serve_soup']
-    SUPP_STS = ['put_onion_closer']#, 'get_soup_from_counter']#, 'put_plate_closer', 'put_soup_closer'] # 3, 6, 9
-    COMP_STS = ['get_onion_from_counter']#'get_onion_from_counter', 'get_plate_from_counter']#, 'get_soup_from_counter'] # 1, 5, 8
+    BASE_STS = ['get_onion_from_dispenser', 'put_onion_in_pot', 'get_tomato_from_dispenser', 'put_tomato_in_pot', 'get_plate_from_dish_rack', 'get_soup', 'serve_soup']
+    SUPP_STS = ['put_onion_closer', 'put_tomato_closer']#, 'get_soup_from_counter']#, 'put_plate_closer', 'put_soup_closer'] # 3, 6, 9
+    COMP_STS = ['get_onion_from_counter', 'get_tomato_from_counter']#'get_onion_from_counter', 'get_plate_from_counter']#, 'get_soup_from_counter'] # 1, 5, 8
     IDS_TO_GOAL_MARKERS = {
         0: 'onion_dispenser', 1: 'onion', 2: 'empty_pot', 3: 'counter', 4: 'dish_dispenser', 5: 'dish',
         6: 'counter', 7: 'full_pot', 8: 'soup', 9: 'counter', 10: 'serving_station', 11: 'nothing',
+        12: 'tomato_dispenser', 13: 'tomato'
     }
+    HR_SUBTASKS_TO_SUBTASKS = { k: s for k, s in zip(HUMAN_READABLE_ST, SUBTASKS)}
 
 
 def facing(layout, player):
@@ -59,6 +64,18 @@ def calculate_completed_subtask(layout, prev_state, curr_state, p_idx):
             subtask = 'get_onion_from_counter'
         else:
             raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
+    
+    # Pick up a tomato
+    elif prev_obj is None and curr_obj == 'tomato':
+        # Facing a tomato dispenser
+        if tile_in_front == 'T':
+            subtask = 'get_tomato_from_dispenser'
+        # Facing a counter
+        elif tile_in_front == 'X':
+            subtask = 'get_tomato_from_counter'
+        else:
+            raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
+
     # Place an onion
     elif prev_obj == 'onion' and curr_obj is None:
         # Facing a pot
@@ -69,6 +86,18 @@ def calculate_completed_subtask(layout, prev_state, curr_state, p_idx):
             subtask = 'put_onion_closer'
         else:
             raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
+        
+    # Place a tomato
+    elif prev_obj == 'tomato' and curr_obj is None:
+        # Facing a pot
+        if tile_in_front == 'P':
+            subtask = 'put_tomato_in_pot'
+        # Facing a counter
+        elif tile_in_front == 'X':
+            subtask = 'put_tomato_closer'
+        else:
+            raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
+
     # Pick up a dish
     elif prev_obj is None and curr_obj == 'dish':
         # Facing a dish dispenser
