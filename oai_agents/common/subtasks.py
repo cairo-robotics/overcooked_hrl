@@ -3,6 +3,7 @@ import numpy as np
 class Subtasks:
     SUBTASKS = ['get_onion_from_dispenser', 'get_onion_from_counter', 'put_onion_in_pot', 'put_onion_closer',
                 'get_tomato_from_dispenser', 'get_tomato_from_counter', 'put_tomato_in_pot', 'put_tomato_closer',
+                'get_chicken_from_dispenser', 'get_chicken_from_counter', 'put_chicken_in_pot', 'put_chicken_closer',
                 'get_plate_from_dish_rack', 'get_plate_from_counter', 'put_plate_closer', 'get_soup',
                 'get_soup_from_counter', 'put_soup_closer', 'serve_soup', 'unknown']
     HUMAN_READABLE_ST = ['Grabbing an onion from dispenser', 'Grabbing an onion from counter',
@@ -73,6 +74,16 @@ def calculate_completed_subtask(layout, prev_state, curr_state, p_idx):
         # Facing a counter
         elif tile_in_front == 'X':
             subtask = 'get_tomato_from_counter'
+        else:
+            raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
+
+    elif prev_obj is None and curr_obj == 'chicken':
+        # Facing a chicken dispenser
+        if tile_in_front == 'C':
+            subtask = 'get_chicken_from_dispenser'
+        # Facing a counter
+        elif tile_in_front == 'X':
+            subtask = 'get_chicken_from_counter'
         else:
             raise ValueError(f'Unexpected transition. {prev_obj} -> {curr_obj} while facing {tile_in_front}')
 
