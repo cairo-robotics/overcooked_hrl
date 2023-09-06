@@ -19,7 +19,7 @@ from stable_baselines3.common.vec_env.stacked_observations import StackedObserva
 # DEPRECATED NOTE: For counter circuit, trained workers with 8, but trained manager with 4. Only 4 spots are useful add
 # more during subtask worker training for robustness
 # Max number of counters the agents should use
-USEABLE_COUNTERS = {'counter_circuit_o_1order': 8, 'forced_coordination': 5, 'asymmetric_advantages': 4, 'cramped_room': 5, 'coordination_ring': 5} # FOR WORKER TRAINING
+USEABLE_COUNTERS = {'counter_circuit_o_1order': 8, 'forced_coordination': 5, 'forced_coordination_tomato': 5, 'asymmetric_advantages': 4, 'cramped_room': 5, 'coordination_ring': 5} # FOR WORKER TRAINING
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 6, 'forced_coordination': 3, 'asymmetric_advantages': 2, 'cramped_room': 4, 'coordination_ring': 4} # FOR MANAGER TRAINING
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 4, 'asymmetric_advantages': 4, 'cramped_room': 3, 'coordination_ring': 3}  # FOR EVALUATION AND SP TRAINING
 
@@ -84,6 +84,8 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
+    def set_subtask_weights(self, mask):
+        self.subtask_weights = mask
 
     def set_env_layout(self, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
@@ -154,7 +156,11 @@ class OvercookedGymEnv(Env):
         pygame.display.flip()
 
     def action_masks(self, p_idx):
-        return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx, USEABLE_COUNTERS[self.layout_name]).astype(bool)
+        try:
+            usable_counters = USEABLE_COUNTERS[self.layout_name]
+        except KeyError:
+            usable_counters = 5
+        return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx, usable_counters).astype(bool)
 
     def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
         enc_fn = enc_fn or self.encoding_fn
