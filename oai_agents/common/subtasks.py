@@ -255,6 +255,31 @@ def get_doable_subtasks(state, prev_subtask, layout_name, terrain, p_idx, n_coun
         # if not (layout_name == 'forced_coordination' and p_idx == 1):
         if non_full_pot_exists(state, terrain, layout_name):
                 subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_onion_in_pot']] = 1
+
+    elif state.players[p_idx].held_object.name == 'tomato':
+        # There must be an empty counter to put something down
+        if len(loose_objects) < n_counters and prev_subtask != 'get_tomato_from_counter':
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_tomato_closer']] = 1
+        # There must be an empty pot to put a tomato into
+        if non_full_pot_exists(state, terrain, layout_name):
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_tomato_in_pot']] = 1
+
+    elif state.players[p_idx].held_object.name == 'cabbage':
+        # There must be an empty counter to put something down
+        if len(loose_objects) < n_counters and prev_subtask != 'get_cabbage_from_counter':
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_cabbage_closer']] = 1
+        # There must be an empty pot to put a cabbage into
+        if non_full_pot_exists(state, terrain, layout_name):
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_cabbage_in_pot']] = 1
+
+    elif state.players[p_idx].held_object.name == 'fish':
+        # There must be an empty counter to put something down
+        if len(loose_objects) < n_counters and prev_subtask != 'get_fish_from_counter':
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_fish_closer']] = 1
+        # There must be an empty pot to put a fish into
+        if non_full_pot_exists(state, terrain, layout_name):
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['put_fish_in_pot']] = 1
+
     # The player is holding a plate, so it can only accomplish tasks that involve putting the plate somewhere
     elif state.players[p_idx].held_object.name == 'dish':
         # There must be an empty counter to put something down
