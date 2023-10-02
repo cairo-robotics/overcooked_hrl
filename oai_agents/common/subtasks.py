@@ -11,6 +11,10 @@ class Subtasks:
                          'Putting onion in pot', 'Placing onion closer to pot',
                          'Grabbing a tomato from dispenser', 'Grabbing a tomato from counter',
                          'Putting tomato in pot', 'Placing tomato closer to pot',
+                         'Grabbing a cabbage from dispenser', 'Grabbing a cabbage from counter',
+                            'Putting cabbage in pot', 'Placing cabbage closer to pot',
+                            'Grabbing a fish from dispenser', 'Grabbing a fish from counter',
+                            'Putting fish in pot', 'Placing fish closer to pot',
                          'Grabbing dish from dispenser', 'Grabbing dish from counter',
                          'Placing dish closer to pot', 'Getting the soup',
                          'Grabbing soup from counter', 'Placing soup closer',
@@ -23,10 +27,18 @@ class Subtasks:
     BASE_STS = ['get_onion_from_dispenser', 'put_onion_in_pot', 'get_tomato_from_dispenser', 'put_tomato_in_pot', 'get_plate_from_dish_rack', 'get_soup', 'serve_soup']
     SUPP_STS = ['put_onion_closer', 'put_tomato_closer']#, 'get_soup_from_counter']#, 'put_plate_closer', 'put_soup_closer'] # 3, 6, 9
     COMP_STS = ['get_onion_from_counter', 'get_tomato_from_counter']#'get_onion_from_counter', 'get_plate_from_counter']#, 'get_soup_from_counter'] # 1, 5, 8
+    # IDS_TO_GOAL_MARKERS = {
+    #     0: 'onion_dispenser', 1: 'onion', 2: 'empty_pot', 3: 'counter', 4: 'dish_dispenser', 5: 'dish',
+    #     6: 'counter', 7: 'full_pot', 8: 'soup', 9: 'counter', 10: 'serving_station', 11: 'nothing',
+    #     12: 'tomato_dispenser', 13: 'tomato'
+    # }
     IDS_TO_GOAL_MARKERS = {
-        0: 'onion_dispenser', 1: 'onion', 2: 'empty_pot', 3: 'counter', 4: 'dish_dispenser', 5: 'dish',
-        6: 'counter', 7: 'full_pot', 8: 'soup', 9: 'counter', 10: 'serving_station', 11: 'nothing',
-        12: 'tomato_dispenser', 13: 'tomato'
+        0: 'onion_dispenser', 1: 'onion', 2: 'empty_pot', 3: 'counter',
+        4: 'tomato_dispenser', 5: 'tomato', 6: 'empty_pot', 7: 'counter',
+        8: 'cabbage_dispenser', 9: 'cabbage', 10: 'empty_pot', 11: 'counter',
+        12: 'fish_dispenser', 13: 'fish', 14: 'empty_pot', 15: 'counter',
+        16: 'dish_dispenser', 17: 'dish', 18: 'counter', 19: 'full_pot',
+        20: 'soup', 21: 'counter', 22: 'serving_station', 23: 'nothing'
     }
     HR_SUBTASKS_TO_SUBTASKS = { k: s for k, s in zip(HUMAN_READABLE_ST, SUBTASKS)}
 
