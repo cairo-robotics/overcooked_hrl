@@ -3,6 +3,14 @@ from overcooked_ai_py.planning.planners import MediumLevelActionManager, NO_COUN
 from typing import Dict, Tuple
 import numpy as np
 
+def basic_encoding(mdp, state, grid_shape=None, horizon=None, p_idx=None, goal_objects=None):
+    obs = {
+        'state': state,
+        'player_completed_subtasks': [],
+        'teammate_completed_subtasks': []
+    }
+    return obs
+
 def OAI_feats_closure():
     mlams = {}
     def OAI_get_feats(mdp: OvercookedGridworld, state: OvercookedState, grid_shape: tuple, horizon: int,
@@ -113,6 +121,7 @@ def get_egocentric_grid(grid: np.array, ego_grid_shape: Tuple[int, int], player:
 
 
 ENCODING_SCHEMES = {
+    'basic': basic_encoding,
     'OAI_feats': OAI_feats,
     'OAI_lossless': OAI_encode_state,
     'OAI_egocentric': OAI_egocentric_encode_state,

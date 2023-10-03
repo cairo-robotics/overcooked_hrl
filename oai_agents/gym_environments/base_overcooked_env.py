@@ -35,6 +35,7 @@ class OvercookedGymEnv(Env):
         # Observation encoding setup
         enc_fn = enc_fn or args.encoding_fn
         self.encoding_fn =  ENCODING_SCHEMES[enc_fn]
+        print(self.encoding_fn)
         if enc_fn == 'OAI_egocentric':
             # Override grid shape to make it egocentric
             assert grid_shape is None, 'Grid shape cannot be used when egocentric encodings are used!'
@@ -52,7 +53,7 @@ class OvercookedGymEnv(Env):
         self.obs_dict = {}
         if enc_fn == 'OAI_feats':
             self.obs_dict['agent_obs'] = spaces.Box(0, 400, (96,), dtype=int)
-        else:
+        elif enc_fn != 'basic':
             self.obs_dict['visual_obs'] = spaces.Box(0, 20, (self.num_enc_channels, *self.grid_shape), dtype=int)
             # Stacked obs for players
             self.stackedobs = [StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first'),
@@ -104,16 +105,25 @@ class OvercookedGymEnv(Env):
             self.layout_name = layout_name or self.args.layout_names[env_index]
             self.mdp = OvercookedGridworld.from_layout_name(self.layout_name)
             all_counters = self.mdp.get_counter_locations()
-            COUNTERS_PARAMS = {
+            # COUNTERS_PARAMS = {
+            #     'start_orientations': False,
+            #     'wait_allowed': False,
+            #     'counter_goals': all_counters,
+            #     'counter_drop': all_counters,
+            #     'counter_pickup': all_counters,
+            #     'same_motion_goals': True
+            # }
+            valid_counters = [(2, 2)]
+            one_counter_params = {
                 'start_orientations': False,
                 'wait_allowed': False,
-                'counter_goals': all_counters,
-                'counter_drop': all_counters,
-                'counter_pickup': all_counters,
+                'counter_goals': True,
+                'counter_drop': valid_counters,
+                'counter_pickup': [],
                 'same_motion_goals': True
             }
 
-            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False)
+            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, one_counter_params, force_compute=False)
             self.env = OvercookedEnv.from_mdp(self.mdp, **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:
             self.env = base_env
@@ -163,9 +173,11 @@ class OvercookedGymEnv(Env):
         return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx, usable_counters).astype(bool)
 
     def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
-        enc_fn = enc_fn or self.encoding_fn
+        # enc_fn = enc_fn or self.encoding_fn
+        enc_fn = self.encoding_fn
+        print(enc_fn, self.encoding_fn)
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=p_idx, goal_objects=goal_objects)
-
+        print(obs)
         if self.stack_frames(p_idx):
             obs['visual_obs'] = np.expand_dims(obs['visual_obs'], 0)
             if self.stack_frames_need_reset[p_idx]: # On reset
@@ -174,7 +186,9 @@ class OvercookedGymEnv(Env):
             else:
                 obs['visual_obs'], _ = self.stackedobs[p_idx].update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
-        if self.return_completed_subtasks or (self.teammate is not None and p_idx == self.t_idx and 'player_completed_subtasks' in self.teammate.policy.observation_space.keys()):
+        # if self.return_completed_subtasks or (self.teammate is not None and p_idx == self.t_idx and 'player_completed_subtasks' in self.teammate.policy.observation_space.keys()):
+        if self.return_completed_subtasks or (self.teammate is not None and p_idx == self.t_idx):
+
             # If this isn't the first step of the game, see if a subtask has been completed
             if self.prev_state is not None:
                 comp_st = calculate_completed_subtask(self.terrain, self.prev_state, self.state, p_idx)
@@ -188,10 +202,10 @@ class OvercookedGymEnv(Env):
             obs['player_completed_subtasks'] =  self.completed_tasks[p_idx]
             obs['teammate_completed_subtasks'] = self.completed_tasks[1 - p_idx]
             obs['subtask_mask'] = self.action_masks(p_idx)
-        if p_idx == self.t_idx and self.teammate is not None:
-            obs = {k: v for k, v in obs.items() if k in self.teammate.policy.observation_space.keys()}
-        else:
-            obs = {k: v for k, v in obs.items() if k in self.observation_space.keys()}
+        # if p_idx == self.t_idx and self.teammate is not None:
+        #     obs = {k: v for k, v in obs.items() if k in self.teammate.policy.observation_space.keys()}
+        # else:
+        #     obs = {k: v for k, v in obs.items() if k in self.observation_space.keys()}
         return obs
 
     def step(self, action):
