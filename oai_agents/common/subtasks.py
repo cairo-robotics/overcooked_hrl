@@ -234,14 +234,22 @@ def get_doable_subtasks(state, prev_subtask, layout_name, terrain, p_idx, n_coun
         # These are always possible if the player is not holding an object
         if not (layout_name == 'forced_coordination' and p_idx == 0):
             subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_onion_from_dispenser']] = 1
-        if not (layout_name == 'forced_coordination' and p_idx == 0):
             subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']] = 1
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_tomato_from_dispenser']] = 1
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_cabbage_from_dispenser']] = 1
+            subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_fish_from_dispenser']] = 1
 
         # The following subtasks are only possible on some configurations for some players (this filters useless tasks)
         # These are only possible if the respective objects exist on a counter somewhere
         for obj in loose_objects:
             if obj.name == 'onion' and prev_subtask != 'put_onion_closer':
                 subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_onion_from_counter']] = 1
+            elif obj.name == 'tomato' and prev_subtask != 'put_tomato_closer':
+                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_tomato_from_counter']] = 1
+            elif obj.name == 'cabbage' and prev_subtask != 'put_cabbage_closer':
+                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_cabbage_from_counter']] = 1
+            elif obj.name == 'fish' and prev_subtask != 'put_fish_closer':
+                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_fish_from_counter']] = 1
             elif obj.name == 'dish' and prev_subtask != 'put_plate_closer':
                 subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_plate_from_counter']] = 1
             elif obj.name == 'soup' and prev_subtask != 'put_soup_closer':

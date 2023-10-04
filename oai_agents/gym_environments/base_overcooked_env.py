@@ -19,7 +19,7 @@ from stable_baselines3.common.vec_env.stacked_observations import StackedObserva
 # DEPRECATED NOTE: For counter circuit, trained workers with 8, but trained manager with 4. Only 4 spots are useful add
 # more during subtask worker training for robustness
 # Max number of counters the agents should use
-USEABLE_COUNTERS = {'counter_circuit_o_1order': 8, 'forced_coordination': 5, 'forced_coordination_tomato': 5, 'asymmetric_advantages': 4, 'cramped_room': 5, 'coordination_ring': 5} # FOR WORKER TRAINING
+USEABLE_COUNTERS = {'ORA_symmetry': 4, 'counter_circuit_o_1order': 8, 'forced_coordination': 5, 'forced_coordination_tomato': 5, 'asymmetric_advantages': 4, 'cramped_room': 5, 'coordination_ring': 5} # FOR WORKER TRAINING
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 6, 'forced_coordination': 3, 'asymmetric_advantages': 2, 'cramped_room': 4, 'coordination_ring': 4} # FOR MANAGER TRAINING
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 4, 'asymmetric_advantages': 4, 'cramped_room': 3, 'coordination_ring': 3}  # FOR EVALUATION AND SP TRAINING
 
@@ -175,9 +175,7 @@ class OvercookedGymEnv(Env):
     def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
         # enc_fn = enc_fn or self.encoding_fn
         enc_fn = self.encoding_fn
-        print(enc_fn, self.encoding_fn)
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=p_idx, goal_objects=goal_objects)
-        print(obs)
         if self.stack_frames(p_idx):
             obs['visual_obs'] = np.expand_dims(obs['visual_obs'], 0)
             if self.stack_frames_need_reset[p_idx]: # On reset
